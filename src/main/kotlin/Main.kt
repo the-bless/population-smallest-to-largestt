@@ -9,7 +9,7 @@ data class Country @JsonCreator constructor(
     @JsonProperty("population") val population: Long
 )
 
-fun sortCountriesByLetters(filePath: String, letters: Set<Char>): List<Country> {
+fun filterCountriesByPopulationAndLetters(filePath: String): List<Country> {
     // Read JSON file
     val jsonString = File(filePath).readText()
 
@@ -17,24 +17,28 @@ fun sortCountriesByLetters(filePath: String, letters: Set<Char>): List<Country> 
     val objectMapper = ObjectMapper()
     val countries: List<Country> = objectMapper.readValue(jsonString)
 
-    // Sort countries by the presence of specified letters in the country name
-    val sortedCountries = countries.filter { country ->
-        country.country.toLowerCase().any { it in letters }
-    }.sortedBy { it.country }
+    // Filter countries with odd population and 5, 6, or 7 letters in the name
+    val filteredCountries = countries.filter { country ->
+        country.population % 2 != 0.toLong() && country.country.length in 5..7
+    }
 
-    return sortedCountries
+    return filteredCountries
 }
 
 fun main() {
     val filePath = "src/country.json"
-    val lettersToSort = setOf('p', 's', 'k')
 
     try {
-        val sortedCountries = sortCountriesByLetters(filePath, lettersToSort)
+        val filteredCountries = filterCountriesByPopulationAndLetters(filePath)
 
-        // Print sorted countries
-        sortedCountries.forEach { country ->
-            println("Country: ${country.country}, Population: ${country.population}")
+        // Print filtered countries
+        if (filteredCountries.isNotEmpty()) {
+            println("Countries with odd population and 5, 6, or 7 letters in the name:")
+            filteredCountries.forEach { country ->
+                println("Country: ${country.country}, Population: ${country.population}")
+            }
+        } else {
+            println("No countries found with the specified criteria.")
         }
     } catch (e: Exception) {
         println("Error reading or parsing the JSON file: ${e.message}")
