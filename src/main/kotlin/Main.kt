@@ -9,7 +9,7 @@ data class Country @JsonCreator constructor(
     @JsonProperty("population") val population: Long
 )
 
-fun filterCountriesByPopulationAndLetters(filePath: String): List<Country> {
+fun sortCountriesByNameLength(filePath: String): List<Country> {
     // Read JSON file
     val jsonString = File(filePath).readText()
 
@@ -17,28 +17,26 @@ fun filterCountriesByPopulationAndLetters(filePath: String): List<Country> {
     val objectMapper = ObjectMapper()
     val countries: List<Country> = objectMapper.readValue(jsonString)
 
-    // Filter countries with odd population and 5, 6, or 7 letters in the name
-    val filteredCountries = countries.filter { country ->
-        country.population % 2 != 0.toLong() && country.country.length in 5..7
-    }
+    // Sort countries by the length of their names
+    val sortedCountries = countries.sortedBy { it.country.length }
 
-    return filteredCountries
+    return sortedCountries
 }
 
 fun main() {
     val filePath = "src/country.json"
 
     try {
-        val filteredCountries = filterCountriesByPopulationAndLetters(filePath)
+        val sortedCountries = sortCountriesByNameLength(filePath)
 
-        // Print filtered countries
-        if (filteredCountries.isNotEmpty()) {
-            println("Countries with odd population and 5, 6, or 7 letters in the name:")
-            filteredCountries.forEach { country ->
+        // Print sorted countries
+        if (sortedCountries.isNotEmpty()) {
+            println("Countries sorted by the length of their names:")
+            sortedCountries.forEach { country ->
                 println("Country: ${country.country}, Population: ${country.population}")
             }
         } else {
-            println("No countries found with the specified criteria.")
+            println("No countries found.")
         }
     } catch (e: Exception) {
         println("Error reading or parsing the JSON file: ${e.message}")
