@@ -1,4 +1,3 @@
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.annotation.JsonCreator
@@ -10,8 +9,7 @@ data class Country @JsonCreator constructor(
     @JsonProperty("population") val population: Long
 )
 
-
-fun sortCountriesByPopulation(filePath: String): List<Country> {
+fun sortCountriesByLetters(filePath: String, letters: Set<Char>): List<Country> {
     // Read JSON file
     val jsonString = File(filePath).readText()
 
@@ -19,17 +17,20 @@ fun sortCountriesByPopulation(filePath: String): List<Country> {
     val objectMapper = ObjectMapper()
     val countries: List<Country> = objectMapper.readValue(jsonString)
 
-    // Sort countries by population
-    val sortedCountries = countries.sortedBy { it.population }
+    // Sort countries by the presence of specified letters in the country name
+    val sortedCountries = countries.filter { country ->
+        country.country.toLowerCase().any { it in letters }
+    }.sortedBy { it.country }
 
     return sortedCountries
 }
 
 fun main() {
     val filePath = "src/country.json"
+    val lettersToSort = setOf('p', 's', 'k')
 
     try {
-        val sortedCountries = sortCountriesByPopulation(filePath)
+        val sortedCountries = sortCountriesByLetters(filePath, lettersToSort)
 
         // Print sorted countries
         sortedCountries.forEach { country ->
